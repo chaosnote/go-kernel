@@ -41,12 +41,12 @@ func NewConsoleLogger() (*zap.Logger, error) {
 // @see https://github.com/uber-go/zap/blob/master/FAQ.md#does-zap-support-log-rotation
 func NewFileLogger(path, name string) *zap.Logger {
 	h := lumberjack.Logger{
-		Filename:   fmt.Sprintf("./dist/logs/%s/.log", path), // 文件輸出位置
-		MaxSize:    10,                                       // 文件大小 MB
-		LocalTime:  true,                                     // 是否使用本地時間
-		Compress:   false,                                    // 是否壓縮檔案 ( 大小差滿多的，但不確定效能會不會影響很大 )
-		MaxAge:     30,                                       // 預設值是不刪除舊檔(單位天), 修改為 30 天
-		MaxBackups: 50,                                       // 保留多少個備份檔( 受限 MaxAge )，預設全保留 ( 500MB )
+		Filename:   fmt.Sprintf("./%s/%s/.log", path, name), // 文件輸出位置
+		MaxSize:    10,                                      // 文件大小 MB
+		LocalTime:  true,                                    // 是否使用本地時間
+		Compress:   false,                                   // 是否壓縮檔案 ( 大小差滿多的，但不確定效能會不會影響很大 )
+		MaxAge:     30,                                      // 預設值是不刪除舊檔(單位天), 修改為 30 天
+		MaxBackups: 50,                                      // 保留多少個備份檔( 受限 MaxAge )，預設全保留 ( 500MB )
 	}
 	ws := zapcore.AddSync(&h)
 
