@@ -39,7 +39,7 @@ func NewConsoleLogger() (*zap.Logger, error) {
 
 // NewFileLogger ...
 // @see https://github.com/uber-go/zap/blob/master/FAQ.md#does-zap-support-log-rotation
-func NewFileLogger(path string) *zap.Logger {
+func NewFileLogger(path, name string) *zap.Logger {
 	h := lumberjack.Logger{
 		Filename:   fmt.Sprintf("./dist/logs/%s/.log", path), // 文件輸出位置
 		MaxSize:    10,                                       // 文件大小 MB
@@ -72,44 +72,6 @@ func NewEmptyLogger() *zap.Logger {
 	return zap.NewNop()
 }
 
-//-------------------------------------------------------------------------------------------------[Color]
-
-// ConsoleColor 背景色
-//@see https://stackoverflow.com/questions/5762491/how-to-print-color-in-console-using-system-out-println
-type ConsoleColor string
-
-// ToString ...
-func (v ConsoleColor) ToString() string {
-	return string(v)
-}
-
-// ANSIBlackBG ...
-const ANSIBlackBG ConsoleColor = "\u001B[40m%s\u001B[0m"
-
-// ANSIRedBG ...
-const ANSIRedBG ConsoleColor = "\u001B[41m%s\u001B[0m"
-
-// ANSIGreenBG ...
-const ANSIGreenBG ConsoleColor = "\u001B[42m%s\u001B[0m"
-
-// ANSIYellowBG ...
-const ANSIYellowBG ConsoleColor = "\u001B[43m%s\u001B[0m"
-
-// ANSIBlueBG ...
-const ANSIBlueBG ConsoleColor = "\u001B[44m%s\u001B[0m"
-
-// ANSIPurpleBG ...
-const ANSIPurpleBG ConsoleColor = "\u001B[45m%s\u001B[0m"
-
-// ANSICyanBG ...
-const ANSICyanBG ConsoleColor = "\u001B[46m%s\u001B[0m"
-
-// ANSIWhiteBG ...
-const ANSIWhiteBG ConsoleColor = "\u001B[47m%s\u001B[0m"
-
-// ANSIDefaultBG ...
-const ANSIDefaultBG ConsoleColor = "%s"
-
 //-------------------------------------------------------------------------------------------------[Custom]
 
 // KeyValuePair ...
@@ -123,7 +85,6 @@ func (v KeyValuePair) Add(k string, p interface{}) KeyValuePair {
 
 // Logger ...
 type Logger struct {
-	ConsoleColor
 	mFile    *zap.Logger
 	mConsole *zap.Logger
 }
@@ -132,6 +93,8 @@ type Logger struct {
 // output value as json
 // or use KeyValuePair
 //
+// var pair = KeyValuePair{"a":"b","c":"d"}
+// or
 // var pair = KeyValuePair{}
 // pair.Add("a", "b").Add("c", "d")
 func (v Logger) Debug(output interface{}) {
@@ -146,8 +109,7 @@ func (v Logger) Debug(output interface{}) {
 		return
 	}
 
-	c := fmt.Sprintf("\n"+v.ConsoleColor.ToString(), string(j))
-	v.mConsole.Debug(c)
+	v.mConsole.Debug("\n" + string(j))
 }
 
 // Info @see Debug
@@ -166,9 +128,7 @@ func (v Logger) Info(output interface{}) {
 		return
 	}
 
-	c = fmt.Sprintf("\n"+v.ConsoleColor.ToString(), c)
-	v.mConsole.Debug(c)
-
+	v.mConsole.Debug("\n" + c)
 }
 
 // Fatal @see Debug
@@ -177,12 +137,12 @@ func (v Logger) Fatal(output interface{}) {
 	os.Exit(0)
 }
 
-// NewLogger ...
-func NewLogger(fullFilePath string, useConsole bool, cc ConsoleColor) *Logger {
-	l := &Logger{
-		ConsoleColor: cc,
-	}
-	l.mFile = NewFileLogger(fullFilePath)
+// NewLogger
+// path 路徑
+// name (資料夾/檔案)名稱
+func NewLogger(path, name string, useConsole bool) *Logger {
+	l := &Logger{}
+	l.mFile = NewFileLogger(path, name)
 
 	if useConsole {
 		var e error
