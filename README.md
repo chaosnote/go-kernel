@@ -1,27 +1,26 @@
-# 底層方法
+# 工具說明
 
-## 函式定義規則
+## 撰寫規則
     expect(Any).To(Be)
 
-## 結構修改
-    功能
-        builder
-    不在使用 base
-        Builder 後反傳 interface
-    改為 inject 功能至指定對像
-        例 : game, server
-    log 改為一層傳遞一層，建構時需設置
-    server 加入 main
-    ↑  同一件事，應修改為
+## 待修改
 
-    "github.com/golang/protobuf/jsonpb"
-	"github.com/golang/protobuf/proto"
-        修改至新物件擴充類別
-    "go get github.com/google/uuid"
-        待補
+功能
+1. builder
 
+不在使用 base
+1. Builder 後反傳 interface
 
+改為 inject 功能至指定對像
+1. 例 : game, server    
 
-## ( GO )輔助工具
+修改至新物件擴充類別
+1. "github.com/golang/protobuf/jsonpb"
+1. "github.com/golang/protobuf/proto"
+
+待補
+1. "go get github.com/google/uuid"
+
+## ( GO )輔助指命
     go vet -json main.go
     delve debug main.go
