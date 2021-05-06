@@ -1,4 +1,4 @@
-package content
+package response
 
 // This file was generated from JSON Schema using quicktype, do not modify it directly.
 // To parse and unparse this JSON data, add this code to your project and do:
@@ -31,6 +31,8 @@ type Model struct {
 	Data    interface{} `json:"data"`
 }
 
+// http server 的回應方式… 不與 socket 的 package 共用
+
 //-----------------------------------------------------------------------------
 
 // Status ...
@@ -50,7 +52,7 @@ const OK Status = "OK"
 func (v *Model) Write(w http.ResponseWriter, r *http.Request) {
 	json, err := v.Marshal()
 	if err != nil {
-		// 記錄底層錯誤
+		//TODO 需記錄錯誤
 		http.NotFound(w, r)
 		return
 	}
