@@ -44,28 +44,29 @@ func Run() {
 }
 
 // After1S ...
-func After1S(bt *int64, dt int64) bool {
-	return AfterNS(bt, dt, 1)
+// ndt -> now duration time
+func After1S(ndt *int64, dt int64) bool {
+	return AfterNS(ndt, dt, 1)
 }
 
 // AfterNS ...
-func AfterNS(bt *int64, dt int64, sec int64) bool {
-	*bt = *bt + dt
-	l := time.Duration(*bt) - time.Second*time.Duration(sec)
+func AfterNS(ndt *int64, dt int64, sec int64) bool {
+	*ndt = *ndt + dt
+	l := time.Duration(*ndt) - time.Second*time.Duration(sec)
 
 	if l >= 0 {
-		*bt = int64(l)
+		*ndt = int64(l)
 		return true
 	}
 	return false
 }
 
 // AfterNM ...
-func AfterNM(bt *int64, dt int64, min int64) bool {
-	return AfterNS(bt, dt, min*60)
+func AfterNM(ndt *int64, dt int64, min int64) bool {
+	return AfterNS(ndt, dt, min*60)
 }
 
 // AfterNH ...
-func AfterNH(bt *int64, dt int64, hour int64) bool {
-	return AfterNS(bt, dt, hour*60)
+func AfterNH(ndt *int64, dt int64, hour int64) bool {
+	return AfterNS(ndt, dt, hour*60)
 }
