@@ -1,6 +1,7 @@
 package evt
 
 import (
+	"fmt"
 	"sync"
 )
 
@@ -16,7 +17,7 @@ type Delegate interface {
 
 var mu sync.Mutex
 var idx = 0
-var store = map[string]map[int]Delegate{}
+var store = map[string]map[string]Delegate{}
 
 // Dispatch 觸發機制
 //
@@ -40,7 +41,7 @@ func Dispatch(name string, data interface{}) {
 // name : event name
 //
 // id : identify id
-func Remove(name string, id int) {
+func Remove(name string, id string) {
 	mu.Lock()
 	if m, ok := store[name]; ok {
 		delete(m, id)
@@ -51,14 +52,15 @@ func Remove(name string, id int) {
 
 // Register ...
 // 字串
-func Register(name string, d Delegate) int {
+func Register(name string, d Delegate) string {
 	mu.Lock()
 	idx = idx + 1
+	id := fmt.Sprintf("%d", idx)
 	_, ok := store[name]
 	if !ok {
-		store[name] = map[int]Delegate{}
+		store[name] = map[string]Delegate{}
 	}
-	store[name][idx] = d
+	store[name][id] = d
 	defer mu.Unlock()
-	return idx
+	return id
 }
