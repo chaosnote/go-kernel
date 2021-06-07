@@ -24,12 +24,12 @@ var store = map[string]map[int]Delegate{}
 //
 // data :  any type
 //
-// go Dispatch('string', any)
+// Dispatch('string', any)
 func Dispatch(name string, data interface{}) {
 	mu.Lock()
 	if m, ok := store[name]; ok {
 		for _, v := range m {
-			v.On(data)
+			go v.On(data) // race !?
 		}
 	}
 	mu.Unlock()
