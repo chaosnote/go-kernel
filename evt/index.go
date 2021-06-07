@@ -52,13 +52,13 @@ func Remove(name string, id int) {
 // Register ...
 // 字串
 func Register(name string, d Delegate) int {
-	var i = idx + 1
 	mu.Lock()
+	idx = idx + 1
 	_, ok := store[name]
 	if !ok {
 		store[name] = map[int]Delegate{}
 	}
-	store[name][i] = d
+	store[name][idx] = d
 	defer mu.Unlock()
-	return i
+	return idx
 }
