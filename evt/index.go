@@ -15,25 +15,35 @@ type Delegate interface {
 }
 
 var mu sync.Mutex
-var store = map[string]map[Delegate]bool{}
+var idx = 0
+var store = map[string]map[int]Delegate{}
 
-// Dispatch ...
+// Dispatch 觸發機制
+//
+// name : event name
+//
+// data :  any type
+//
 // go Dispatch('string', any)
 func Dispatch(name string, data interface{}) {
 	mu.Lock()
 	if m, ok := store[name]; ok {
-		for d := range m {
-			d.On(data)
+		for _, v := range m {
+			v.On(data)
 		}
 	}
 	mu.Unlock()
 }
 
-// Remove ...
-func Remove(name string, d Delegate) {
+// Remove 移除指定事件
+//
+// name : event name
+//
+// id : identify id
+func Remove(name string, id int) {
 	mu.Lock()
 	if m, ok := store[name]; ok {
-		delete(m, d)
+		delete(m, id)
 		store[name] = m
 	}
 	mu.Unlock()
@@ -41,12 +51,14 @@ func Remove(name string, d Delegate) {
 
 // Register ...
 // 字串
-func Register(name string, d Delegate) {
+func Register(name string, d Delegate) int {
+	var i = idx + 1
 	mu.Lock()
 	_, ok := store[name]
 	if !ok {
-		store[name] = map[Delegate]bool{}
+		store[name] = map[int]Delegate{}
 	}
-	store[name][d] = true
-	mu.Unlock()
+	store[name][i] = d
+	defer mu.Unlock()
+	return i
 }
