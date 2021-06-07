@@ -11,9 +11,7 @@ import (
 */
 
 // Delegate 註冊指定事件觸發後，由誰接手處理
-type Delegate interface {
-	On(interface{})
-}
+type Delegate func(interface{})
 
 var mu sync.Mutex
 var idx = 0
@@ -30,7 +28,7 @@ func Dispatch(name string, data interface{}) {
 	mu.Lock()
 	if m, ok := store[name]; ok {
 		for _, v := range m {
-			go v.On(data) // race !?
+			go v(data) // race !?
 		}
 	}
 	mu.Unlock()
