@@ -115,7 +115,7 @@ func (v Logger) Debug(output interface{}) {
 		return
 	}
 
-	v.mConsole.Debug("\n" + string(j))
+	v.mConsole.Debug(string(j))
 }
 
 // Info @see Debug
@@ -134,7 +134,7 @@ func (v Logger) Info(output interface{}) {
 		return
 	}
 
-	v.mConsole.Debug("\n" + c)
+	v.mConsole.Debug(c)
 }
 
 // Fatal @see Debug
