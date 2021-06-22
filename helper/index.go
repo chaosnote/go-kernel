@@ -3,7 +3,6 @@ package helper
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"time"
 
 	"go.uber.org/zap"
@@ -37,8 +36,10 @@ func NewConsoleLogger() (*zap.Logger, error) {
 	return l, nil
 }
 
-// NewFileLogger ...
-// @see https://github.com/uber-go/zap/blob/master/FAQ.md#does-zap-support-log-rotation
+/*
+NewFileLogger ...
+	@see https://github.com/uber-go/zap/blob/master/FAQ.md#does-zap-support-log-rotation
+*/
 func NewFileLogger(path, name string) *zap.Logger {
 	h := lumberjack.Logger{
 		Filename:   fmt.Sprintf("./%s/%s/.log", path, name), // 文件輸出位置
@@ -72,86 +73,68 @@ func NewEmptyLogger() *zap.Logger {
 	return zap.NewNop()
 }
 
-//-------------------------------------------------------------------------------------------------[Custom]
+//-------------------------------------------------------------------------------------------------
 
 // KeyValuePair ...
 type KeyValuePair map[string]interface{}
 
 // Add ...
-func (v KeyValuePair) Add(k string, p interface{}) KeyValuePair {
-	v[k] = p
+func (v KeyValuePair) Add(k string, val interface{}) KeyValuePair {
+	v[k] = val
 	return v
 }
 
+/*
+NewKeyValuePair ...
+	key string
+	val interface{}
+*/
+func NewKeyValuePair(key string, val interface{}) KeyValuePair {
+	return KeyValuePair{
+		key: val,
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+
+// JSON constructs a field with the given key and value.
+func JSON(key string, val KeyValuePair) zap.Field {
+	dist, e := json.Marshal(val)
+	if e != nil {
+		return zap.Error(e)
+	}
+	return zap.Field{Key: key, Type: zapcore.StringType, String: string(dist)}
+}
+
+//-------------------------------------------------------------------------------------------------
+
 // Logger ...
 type Logger struct {
-	mFile    *zap.Logger
-	mConsole *zap.Logger
+	File    *zap.Logger
+	Console *zap.Logger
 }
 
-// Debug ...
-// output value as json
-// or use KeyValuePair
-//
-// var pair = KeyValuePair{"a":"b","c":"d"}
-// or
-// var pair = KeyValuePair{}
-// pair.Add("a", "b").Add("c", "d")
-func (v Logger) Debug(output interface{}) {
-	if v.mConsole == nil {
-		return
-	}
-
-	j, e := json.Marshal(output)
-
-	if e != nil {
-		fmt.Println(e)
-		return
-	}
-
-	v.mConsole.Debug(string(j))
-}
-
-// Info @see Debug
-func (v Logger) Info(output interface{}) {
-	j, e := json.Marshal(output)
-
-	if e != nil {
-		fmt.Println(e)
-		return
-	}
-
-	c := string(j)
-	v.mFile.Info(c)
-
-	if v.mConsole == nil {
-		return
-	}
-
-	v.mConsole.Debug(c)
-}
-
-// Fatal @see Debug
-func (v Logger) Fatal(output interface{}) {
-	v.Info(output)
-	os.Exit(0)
-}
-
-// NewLogger
-// path 路徑
-// name (資料夾/檔案)名稱
+/*
+NewLogger
+	path 路徑
+	name (資料夾/檔案)名稱
+	useConsole 是否啟用 console 功能
+*/
 func NewLogger(path, name string, useConsole bool) *Logger {
-	l := &Logger{}
-	l.mFile = NewFileLogger(path, name)
+	log := &Logger{
+		File: NewFileLogger(path, name),
+	}
 
 	if useConsole {
 		var e error
-		l.mConsole, e = NewConsoleLogger()
+		log.Console, e = NewConsoleLogger()
 		if e != nil {
 			panic(e)
 		}
+	} else {
+		log.Console = zap.NewNop()
 	}
-	l.Info(KeyValuePair{"start": time.Now().Format(timeFormat)})
 
-	return l
+	log.File.Info("start : " + time.Now().Format(timeFormat))
+	return log
 }
