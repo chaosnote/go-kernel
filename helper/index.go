@@ -83,12 +83,6 @@ func (v KeyValuePair) Add(k string, p interface{}) KeyValuePair {
 	return v
 }
 
-// Message ...
-func (v KeyValuePair) Message(p interface{}) KeyValuePair {
-	v["message"] = p
-	return v
-}
-
 // Logger ...
 type Logger struct {
 	mFile    *zap.Logger
