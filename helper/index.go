@@ -1,7 +1,6 @@
 package helper
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -29,7 +28,8 @@ func NewConsoleLogger() (*zap.Logger, error) {
 	c.EncoderConfig.EncodeTime = timeEncoder
 	c.EncoderConfig.LevelKey = ""
 
-	l, e := c.Build(zap.AddCallerSkip(1)) // fix caller skip
+	// l, e := c.Build(zap.AddCallerSkip(1)) // fix caller skip
+	l, e := c.Build()
 	if e != nil {
 		return nil, e
 	}
@@ -52,18 +52,20 @@ func NewFileLogger(path, name string) *zap.Logger {
 	ws := zapcore.AddSync(&h)
 
 	ec := zap.NewProductionEncoderConfig()
-	// _encoderConfig.TimeKey = "" // 空字串 不顯示欄位
-	// _encoderConfig.MessageKey = ""
+	// ec.TimeKey = "" // 空字串 不顯示欄位
+	ec.MessageKey = ""
 	ec.LevelKey = ""
 	ec.EncodeTime = timeEncoder
 
 	core := zapcore.NewCore(
-		zapcore.NewConsoleEncoder(ec), // zapcore.NewJSONEncoder(encoderConfig),
-		ws,                            // ...
-		zapcore.InfoLevel,             //
+		zapcore.NewConsoleEncoder(ec),
+		// zapcore.NewJSONEncoder(ec),
+		ws,                // ...
+		zapcore.InfoLevel, //
 	)
 
-	l := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
+	// l := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
+	l := zap.New(core, zap.AddCaller())
 
 	return l
 }
@@ -98,12 +100,12 @@ func NewKeyValuePair(key string, val interface{}) KeyValuePair {
 //-------------------------------------------------------------------------------------------------
 
 // JSON constructs a field with the given key and value.
-func JSON(key string, val KeyValuePair) zap.Field {
-	dist, e := json.Marshal(val)
-	if e != nil {
-		return zap.Error(e)
+func JSON(val KeyValuePair) []zap.Field {
+	list := []zap.Field{}
+	for k, v := range val {
+		list = append(list, zap.Any(k, v))
 	}
-	return zap.Field{Key: key, Type: zapcore.StringType, String: string(dist)}
+	return list
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -135,6 +137,6 @@ func NewLogger(path, name string, useConsole bool) *Logger {
 		log.Console = zap.NewNop()
 	}
 
-	log.File.Info("start : " + time.Now().Format(timeFormat))
+	log.File.Info("start", zap.String("time", time.Now().Format(timeFormat)))
 	return log
 }
