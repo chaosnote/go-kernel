@@ -28,8 +28,8 @@ func NewConsoleLogger() (*zap.Logger, error) {
 	c.EncoderConfig.EncodeTime = timeEncoder
 	c.EncoderConfig.LevelKey = ""
 
-	// l, e := c.Build(zap.AddCallerSkip(1)) // fix caller skip
-	l, e := c.Build()
+	l, e := c.Build(zap.AddCallerSkip(1)) // fix caller skip
+	//l, e := c.Build()
 	if e != nil {
 		return nil, e
 	}
@@ -64,8 +64,8 @@ func NewFileLogger(path, name string) *zap.Logger {
 		zapcore.InfoLevel, //
 	)
 
-	// l := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
-	l := zap.New(core, zap.AddCaller())
+	l := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
+	// l := zap.New(core, zap.AddCaller())
 
 	return l
 }
