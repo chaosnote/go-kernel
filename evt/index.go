@@ -121,7 +121,8 @@ New ...
 */
 func New() pool {
 	p := pool{
-		mu: &sync.Mutex{},
+		mu:    &sync.Mutex{},
+		store: map[string]map[string]Delegate{},
 	}
 
 	return p
