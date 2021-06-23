@@ -13,7 +13,7 @@ import (
 // Delegate 註冊指定事件觸發後，由誰接手處理
 type Delegate func(interface{})
 
-var mPool pool
+var mPool = New()
 
 /*
 Dispatch 觸發機制
@@ -46,12 +46,6 @@ Register ...
 */
 func Register(name string, d Delegate) string {
 	return mPool.Register(name, d)
-}
-
-//-------------------------------------------------------------------------------------------------
-
-func init() {
-	mPool = New()
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -103,10 +97,10 @@ Register ...
 	name : event name
 	delegate : 委派對像
 */
-func (v pool) Register(name string, d Delegate) string {
+func (v *pool) Register(name string, d Delegate) string {
 	v.mu.Lock()
 	v.idx = v.idx + 1
-	id := fmt.Sprintf("%d", v.idx)
+	id := fmt.Sprintf("id.%d", v.idx)
 	_, ok := v.store[name]
 	if !ok {
 		v.store[name] = map[string]Delegate{}
