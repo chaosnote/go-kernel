@@ -1,8 +1,9 @@
 package math
 
 import (
-	"go-kernel/conv"
 	"regexp"
+
+	"github.com/chaosnote/go-kernel/conv"
 )
 
 // 預設 Pow10 放大倍率

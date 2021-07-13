@@ -1,4 +1,4 @@
-module go-kernel
+module github.com/chaosnote/go-kernel
 
 go 1.12
 
