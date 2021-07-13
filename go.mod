@@ -1,4 +1,4 @@
-module kernel
+module go-kernel
 
 go 1.12
 

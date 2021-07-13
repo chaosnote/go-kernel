@@ -1,7 +1,7 @@
 package math
 
 import (
-	"kernel/conv"
+	"go-kernel/conv"
 	"regexp"
 )
 

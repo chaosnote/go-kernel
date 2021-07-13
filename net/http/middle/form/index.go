@@ -1,7 +1,7 @@
 package form
 
 import (
-	"kernel/net/http/response"
+	"go-kernel/net/http/response"
 	"net/http"
 )
 
