@@ -53,7 +53,7 @@ func NewFileLogger(path, name string) *zap.Logger {
 
 	ec := zap.NewProductionEncoderConfig()
 	// ec.TimeKey = "" // 空字串 不顯示欄位
-	ec.MessageKey = ""
+	// ec.MessageKey = ""
 	ec.LevelKey = ""
 	ec.EncodeTime = timeEncoder
 

@@ -9,13 +9,26 @@ import (
 
 const limit = 15
 
-// New ...
-// addr := ":8080"
-//
-// r := mux.NewRouter()
-// r.HandleFunc("/", func(res http.ResponseWriter, req *http.Request) {})
-//
-// server.New(addr, r)
+/*
+New ...
+	addr := ":8080"
+
+	r := mux.NewRouter()
+	r.HandleFunc("/", func(res http.ResponseWriter, req *http.Request) {
+
+		// web socket connect
+		_, e := conn.Accept(res, req)
+		if e != nil {
+			log.File("accept")
+			return
+		}
+
+		// or http server
+
+	})
+
+	server.New(addr, r)
+*/
 func New(
 	addr string,
 	router *mux.Router,

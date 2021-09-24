@@ -7,15 +7,15 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// Upgrader ...
-var Upgrader = websocket.Upgrader{
+// Default ...
+var Default = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 }
 
 func init() {
 	// 可調整為 設定檔 讀取
-	Upgrader.CheckOrigin = func(*http.Request) bool { return true }
+	Default.CheckOrigin = func(*http.Request) bool { return true }
 }
 
 // WebSocket ...
@@ -31,9 +31,10 @@ func (r WebSocket) Dial() (*websocket.Conn, error) {
 	u := url.URL(r)
 	c, _, e := websocket.DefaultDialer.Dial(u.String(), nil)
 
-	if e != nil {
-		return nil, e
-	}
+	return c, e
+}
 
-	return c, nil
+// Accept ...
+func Accept(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
+	return Default.Upgrade(w, r, nil)
 }
