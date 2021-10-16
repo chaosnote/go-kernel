@@ -18,12 +18,16 @@ func init() {
 	Default.CheckOrigin = func(*http.Request) bool { return true }
 }
 
-// WebSocket ...
-// conn.WebSocket(url.URL{
-// 	Scheme: "ws",
-// 	Host:   ":8080",
-// 	Path:   "/",
-// }).Dial()
+/*
+WebSocket ...
+
+	conn.WebSocket(url.URL{
+		Scheme: "ws",
+		Host:   ":8080",
+		Path:   "/",
+	}).Dial()
+
+*/
 type WebSocket url.URL
 
 // Dial ...
