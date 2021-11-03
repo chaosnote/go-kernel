@@ -5,119 +5,103 @@ import (
 	"sync"
 )
 
-/*
-事件(觸發/註冊)(全域)
-如事件數量過多，在思考是否修改為 chan 觸發監控
-*/
+//-------------------------------------------------------------------------------------------------
 
-// Delegate 註冊指定事件觸發後，由誰接手處理
-type Delegate func(interface{})
-
-var mPool = New()
-
-/*
-Dispatch 觸發機制
-	name : event name
-	data :  any type
-
-	evt.Dispatch('string', any)
-*/
-func Dispatch(name string, data interface{}) {
-	mPool.Dispatch(name, data)
-}
-
-/*
-Remove 移除指定事件
-	name : event name
-	id : identify id
-
-	evt.Remove('string', 'string')
-*/
-func Remove(name string, id string) {
-	mPool.Remove(name, id)
-}
-
-/*
-Register ...
-	name : event name
-	delegate : 委派對像
-
-	evt.Register('string', Delegate)
-*/
-func Register(name string, d Delegate) string {
-	return mPool.Register(name, d)
-}
+type Callback func(interface{})
 
 //-------------------------------------------------------------------------------------------------
 
 /*
-pool ...
-	@see
-		1、https://stackoverflow.com/a/37242475
-		2、https://blog.golang.org/maps
-
+事件池
 */
 type pool struct {
-	mu    *sync.Mutex
-	idx   int
-	store map[string]map[string]Delegate
+	mMu    sync.Mutex
+	mStore map[string]Callback
 }
 
 /*
-Dispatch 觸發機制
-	name : event name
-	data :  any type
+Dispatch
+事件觸發
+
+	key string
+	content []byte
+
 */
-func (v pool) Dispatch(name string, data interface{}) {
-	v.mu.Lock()
-	if m, ok := v.store[name]; ok {
-		for _, f := range m {
-			go f(data) // race !?
-		}
+func (v *pool) Dispatch(key string, content interface{}) {
+	v.mMu.Lock()
+	defer v.mMu.Unlock()
+
+	_callback, _ok := v.mStore[key]
+	if !_ok {
+		return
 	}
-	v.mu.Unlock()
+	_callback(content)
+
 }
 
 /*
-Remove 移除指定事件
-	name : event name
-	id : identify id
+Delegate
+事件委派
+
+	key string
+	callback Callback
+
 */
-func (v pool) Remove(name string, id string) {
-	v.mu.Lock()
-	if m, ok := v.store[name]; ok {
-		delete(m, id)
-		v.store[name] = m
+func (v *pool) Delegate(key string, callback Callback) error {
+	v.mMu.Lock()
+	defer v.mMu.Unlock()
+	if _, _ok := v.mStore[key]; _ok {
+		return fmt.Errorf("duplicate key : %s", key)
 	}
-	v.mu.Unlock()
+
+	v.mStore[key] = callback
+
+	return nil
 }
 
 /*
-Register ...
-	name : event name
-	delegate : 委派對像
+Remove
+事件移除
+
+	key string
+
 */
-func (v *pool) Register(name string, d Delegate) string {
-	v.mu.Lock()
-	v.idx = v.idx + 1
-	id := fmt.Sprintf("id.%d", v.idx)
-	_, ok := v.store[name]
-	if !ok {
-		v.store[name] = map[string]Delegate{}
+func (v *pool) Remove(key string) {
+	v.mMu.Lock()
+	defer v.mMu.Unlock()
+
+	if _, _ok := v.mStore[key]; _ok {
+		v.mStore[key] = nil
+		delete(v.mStore, key)
 	}
-	v.store[name][id] = d
-	defer v.mu.Unlock()
-	return id
 }
 
 /*
-New ...
+Destroy
+清除變數
 */
-func New() pool {
-	p := pool{
-		mu:    &sync.Mutex{},
-		store: map[string]map[string]Delegate{},
+func (v *pool) Destroy() {
+
+	for _key := range v.mStore {
+		v.Remove(_key)
 	}
 
-	return p
+}
+
+//-------------------------------------------------------------------------------------------------
+
+type IEvent interface {
+	Dispatch(key string, content interface{})
+	Delegate(key string, callback Callback) error
+	Remove(key string)
+	Destroy()
+}
+
+//-------------------------------------------------------------------------------------------------
+
+func New() IEvent {
+	return &pool{
+		mMu:    sync.Mutex{},
+		mStore: map[string]Callback{},
+	}
 }
