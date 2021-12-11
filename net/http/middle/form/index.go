@@ -2,8 +2,6 @@ package form
 
 import (
 	"net/http"
-
-	"github.com/chaosnote/go-kernel/net/http/response"
 )
 
 // form 格式驗證
@@ -15,7 +13,7 @@ func Handler(next http.Handler) http.Handler {
 
 		if e := r.ParseForm(); e != nil {
 
-			response.NewData(response.OK, e.Error()).Write(w, r) // http.Error(w, fmt.Sprintf("ParseForm() err: %v", err), http.StatusForbidden)
+			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 
 			return
 		}

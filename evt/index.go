@@ -16,6 +16,7 @@ type Callback func(interface{})
 */
 type pool struct {
 	mMu    sync.Mutex
+	mQueue bool
 	mStore map[string]Callback
 }
 
@@ -35,7 +36,12 @@ func (v *pool) Dispatch(key string, content interface{}) {
 	if !_ok {
 		return
 	}
-	_callback(content)
+
+	if v.mQueue {
+		_callback(content)
+	} else {
+		go _callback(content)
+	}
 
 }
 
@@ -50,6 +56,7 @@ Delegate
 func (v *pool) Delegate(key string, callback Callback) error {
 	v.mMu.Lock()
 	defer v.mMu.Unlock()
+
 	if _, _ok := v.mStore[key]; _ok {
 		return fmt.Errorf("duplicate key : %s", key)
 	}
@@ -99,9 +106,37 @@ type IEvent interface {
 
 //-------------------------------------------------------------------------------------------------
 
-func New() IEvent {
+var mEvent = New(true)
+
+func Dispatch(key string, content interface{}) {
+	mEvent.Dispatch(key, content)
+}
+
+func Delegate(key string, callback Callback) error {
+	return mEvent.Delegate(key, callback)
+}
+
+func Remove(key string) {
+	mEvent.Remove(key)
+}
+
+func Destroy() {
+	mEvent.Destroy()
+}
+
+//-------------------------------------------------------------------------------------------------
+
+/*
+New
+
+	queue 是否使用隊列
+		false 則使用 go func()
+
+*/
+func New(queue bool) IEvent {
 	return &pool{
 		mMu:    sync.Mutex{},
+		mQueue: queue,
 		mStore: map[string]Callback{},
 	}
 }

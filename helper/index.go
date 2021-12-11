@@ -13,7 +13,10 @@ import (
 
 //-------------------------------------------------------------------------------------------------[Variable]
 
-const timeFormat = "2006-01-02T15:04:05"
+const (
+	timeFormat = "2006-01-02T15:04:05"
+	skip       = 1
+)
 
 //-------------------------------------------------------------------------------------------------[Func]
 
@@ -28,7 +31,7 @@ func NewConsoleLogger() (*zap.Logger, error) {
 	c.EncoderConfig.EncodeTime = timeEncoder
 	c.EncoderConfig.LevelKey = ""
 
-	l, e := c.Build(zap.AddCallerSkip(1)) // fix caller skip
+	l, e := c.Build(zap.AddCallerSkip(skip))
 	//l, e := c.Build()
 	if e != nil {
 		return nil, e
@@ -64,7 +67,7 @@ func NewFileLogger(path, name string) *zap.Logger {
 		zapcore.InfoLevel, //
 	)
 
-	l := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
+	l := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(skip))
 	// l := zap.New(core, zap.AddCaller())
 
 	return l
@@ -77,44 +80,13 @@ func NewEmptyLogger() *zap.Logger {
 
 //-------------------------------------------------------------------------------------------------
 
-// KeyValuePair ...
-type KeyValuePair map[string]interface{}
-
-// Add ...
-func (v KeyValuePair) Add(k string, val interface{}) KeyValuePair {
-	v[k] = val
-	return v
-}
-
-/*
-NewKeyValuePair ...
-	key string
-	val interface{}
-*/
-func NewKeyValuePair(key string, val interface{}) KeyValuePair {
-	return KeyValuePair{
-		key: val,
-	}
-}
-
-//-------------------------------------------------------------------------------------------------
-
-// JSON constructs a field with the given key and value.
-func JSON(val KeyValuePair) []zap.Field {
-	list := []zap.Field{}
-	for k, v := range val {
-		list = append(list, zap.Any(k, v))
-	}
-	return list
-}
-
-//-------------------------------------------------------------------------------------------------
-
 // Logger ...
 type Logger struct {
 	File    *zap.Logger
 	Console *zap.Logger
 }
+
+//-------------------------------------------------------------------------------------------------
 
 /*
 NewLogger
