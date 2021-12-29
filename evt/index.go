@@ -88,6 +88,8 @@ Destroy
 清除變數
 */
 func (v *pool) Destroy() {
+	v.mMu.Lock()
+	defer v.mMu.Unlock()
 
 	for _key := range v.mStore {
 		v.Remove(_key)
