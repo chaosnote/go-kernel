@@ -1,6 +1,7 @@
 package schedule
 
 import (
+	"sync"
 	"time"
 
 	uuid "github.com/satori/go.uuid"
@@ -11,43 +12,85 @@ import (
 // 1/8.3333*1000=120
 const FPS = 8 * time.Millisecond
 
-var todo = map[string]func(int64){}
+//-------------------------------------------------------------------------------------------------
+
+type task struct {
+	mu    sync.Mutex
+	store map[string]func(int64)
+}
+
+/*
+AddTask ...
+*/
+func (v *task) AddTask(f func(int64)) string {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+
+	u := uuid.NewV4().String()
+	v.store[u] = f
+	return u
+}
+
+/*
+DelTask ...
+*/
+func (v *task) DelTask(key string) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+
+	delete(v.store, key)
+}
+
+/*
+Run ...
+*/
+func (v *task) Run(d int64) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+
+	for _, f := range v.store {
+		f(d)
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+
+var _task = &task{
+	store: map[string]func(int64){},
+}
 
 // AddTask ...
 func AddTask(f func(int64)) string {
-	u := uuid.NewV4().String()
-	todo[u] = f
-	return u
+	return _task.AddTask(f)
 }
 
 // DelTask ...
 func DelTask(key string) {
-	delete(todo, key)
+	_task.DelTask(key)
 }
 
-// Run ...
-func Run() {
+//-------------------------------------------------------------------------------------------------
 
-	s := time.Now().UnixNano() // start
+func init() {
 
-	for range time.Tick(FPS) {
-		n := time.Now().UnixNano() // now
-		d := n - s                 // duration
+	go func() {
 
-		for _, f := range todo {
-			f(d)
+		s := time.Now().UnixNano() // start
+
+		for range time.Tick(FPS) {
+			n := time.Now().UnixNano() // now
+			d := n - s                 // duration
+
+			_task.Run(d)
+
+			s = n // update start
 		}
 
-		s = n // update start
-	}
+	}()
 
 }
 
-// After1S ...
-// ndt -> now duration time
-func After1S(ndt *int64, dt int64) bool {
-	return AfterNS(ndt, dt, 1)
-}
+//-------------------------------------------------------------------------------------------------
 
 // AfterNS ...
 func AfterNS(ndt *int64, dt int64, sec int64) bool {
@@ -59,6 +102,12 @@ func AfterNS(ndt *int64, dt int64, sec int64) bool {
 		return true
 	}
 	return false
+}
+
+// After1S ...
+// ndt -> now duration time
+func After1S(ndt *int64, dt int64) bool {
+	return AfterNS(ndt, dt, 1)
 }
 
 // AfterNM ...
