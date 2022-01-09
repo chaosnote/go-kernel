@@ -92,7 +92,14 @@ func init() {
 
 //-------------------------------------------------------------------------------------------------
 
-// AfterNS ...
+/*
+AfterNS
+
+	ndt *int64
+	dt int64
+	sec int64 單位秒( 不需在乘上 time.Second )
+
+*/
 func AfterNS(ndt *int64, dt int64, sec int64) bool {
 	*ndt = *ndt + dt
 	l := time.Duration(*ndt) - time.Second*time.Duration(sec)
