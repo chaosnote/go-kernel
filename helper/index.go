@@ -73,11 +73,6 @@ func NewFileLogger(path, name string) *zap.Logger {
 	return l
 }
 
-// NewEmptyLogger ...
-func NewEmptyLogger() *zap.Logger {
-	return zap.NewNop()
-}
-
 //-------------------------------------------------------------------------------------------------
 
 // Logger ...
@@ -110,5 +105,14 @@ func NewLogger(path, name string, useConsole bool) *Logger {
 	}
 
 	log.File.Info("start", zap.String("time", time.Now().Format(timeFormat)))
+	return log
+}
+
+// NewEmptyLogger ...
+func NewEmptyLogger() *Logger {
+	log := &Logger{
+		Console: zap.NewNop(),
+		File:    zap.NewNop(),
+	}
 	return log
 }
