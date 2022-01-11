@@ -18,6 +18,8 @@ const (
 	skip       = 1
 )
 
+var Console *zap.Logger = zap.NewNop()
+
 //-------------------------------------------------------------------------------------------------[Func]
 
 // timeEncoder 排除(+8)時區
@@ -25,18 +27,20 @@ func timeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 	enc.AppendString(t.Format("01-02 15:04:05.000"))
 }
 
-// NewConsoleLogger ...
-func NewConsoleLogger() (*zap.Logger, error) {
+/*
+Debug
+*/
+func Debug() {
 	c := zap.NewDevelopmentConfig()
-	c.EncoderConfig.EncodeTime = timeEncoder
 	c.EncoderConfig.LevelKey = ""
+	c.EncoderConfig.EncodeTime = timeEncoder
 
-	l, e := c.Build(zap.AddCallerSkip(skip))
+	var e error
+	Console, e = c.Build(zap.AddCallerSkip(skip))
 	//l, e := c.Build()
 	if e != nil {
-		return nil, e
+		panic(e)
 	}
-	return l, nil
 }
 
 /*
@@ -71,48 +75,4 @@ func NewFileLogger(path, name string) *zap.Logger {
 	// l := zap.New(core, zap.AddCaller())
 
 	return l
-}
-
-//-------------------------------------------------------------------------------------------------
-
-// Logger ...
-type Logger struct {
-	File    *zap.Logger
-	Console *zap.Logger
-}
-
-//-------------------------------------------------------------------------------------------------
-
-/*
-NewLogger
-	path 路徑
-	name (資料夾/檔案)名稱
-	useConsole 是否啟用 console 功能
-*/
-func NewLogger(path, name string, useConsole bool) *Logger {
-	log := &Logger{
-		File: NewFileLogger(path, name),
-	}
-
-	if useConsole {
-		var e error
-		log.Console, e = NewConsoleLogger()
-		if e != nil {
-			panic(e)
-		}
-	} else {
-		log.Console = zap.NewNop()
-	}
-
-	log.File.Info("start", zap.String("time", time.Now().Format(timeFormat)))
-	return log
-}
-
-// NewEmptyLogger ...
-func NewEmptyLogger() *Logger {
-	log := &Logger{
-		Console: zap.NewNop(),
-		File:    zap.NewNop(),
-	}
-	return log
 }
