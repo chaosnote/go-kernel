@@ -3,6 +3,7 @@ package conn
 import (
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -35,7 +36,11 @@ type WebSocket url.URL
 // Dial ...
 func (r WebSocket) Dial() (*websocket.Conn, error) {
 	u := url.URL(r)
-	c, _, e := websocket.DefaultDialer.Dial(u.String(), nil)
+	d := &websocket.Dialer{
+		Proxy:            http.ProxyFromEnvironment,
+		HandshakeTimeout: 5 * time.Second,
+	}
+	c, _, e := d.Dial(u.String(), nil)
 
 	return c, e
 }
