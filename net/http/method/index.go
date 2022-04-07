@@ -18,3 +18,7 @@ type classify string
 func (v classify) Same(t string) bool {
 	return strings.EqualFold(t, string(v))
 }
+
+func (v classify) String() string {
+	return string(v)
+}
